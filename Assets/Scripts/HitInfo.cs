@@ -5,5 +5,5 @@ using UnityEngine;
 public class HitInfo
 {
     public int Damage;
-    public GameObject Emitter;
+    public Player Emitter;
 }

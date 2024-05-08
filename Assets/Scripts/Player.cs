@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -14,22 +15,16 @@ public class Player : MonoBehaviour, IDamageable
     public UnityEvent Death;
     [SerializeField]
     public bool IsInvulnerable = false;
-    private Vector2 pointerInput, movementInput;
-    private Mover mover;
+    private Vector2 pointerInput;
     [SerializeField]
-    public Bullet BulletPrefab;
-    [SerializeField]
-    InputActionReference movement,attack,followCursor,spawn;
+    InputActionReference attack,followCursor,spawn;
     [SerializeField]
     public Particle ObjectToInstantiate;
     [SerializeField]
     public ParticleCreator creator;
-    ParticleSystem ShootParticles;
     [SerializeField]
     Weapon Weapon;
-    [SerializeField]
-    Transform BulletContainer;
-
+    Mover mover;
     private void Start()
     {
         if (Instance == null)
@@ -43,17 +38,24 @@ public class Player : MonoBehaviour, IDamageable
     }
     private void Awake()
     {
-        mover=GetComponent<Mover>();
-        ShootParticles=GetComponent<ParticleSystem>();
+        mover = GetComponent<Mover>();
     }
-    Vector2? target;
+    Transform target
+    {
+        get
+        {
+            return mover.Target;
+        }
+        set
+        {
+            mover.Target = value;
+        }
+    }
     private float maxHoldTime = 0.1f;
     float currentHoldTime = 0;
     private void Update()
     {
         pointerInput = GetPointerInput();
-        movementInput = movement.action.ReadValue<Vector2>();
-        mover.Movement = Move();
     }
     private void OnEnable()
     {
@@ -72,24 +74,17 @@ public class Player : MonoBehaviour, IDamageable
         attack.action.performed -= Attack;
         spawn.action.performed -= Spawn; 
     }
-    private void Attack(InputAction.CallbackContext context)
+    private void Attack(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        BulletPrefab.Direction = (Vector3.MoveTowards(transform.localPosition, pointerInput, 1f)-transform.localPosition).normalized;
-        
-        Debug.Log("Direction: " + BulletPrefab.Direction.ToString());
-        Debug.Log("Emitter: " + BulletPrefab.emitter);
-
-        Bullet bullet = Instantiate(BulletPrefab, Weapon.transform.position, transform.localRotation, BulletContainer);
-        bullet.SetEmitter(gameObject);
         Weapon.Shoot();
     }
-    private void Spawn(InputAction.CallbackContext context)
+    private void Spawn(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
+        
         if (ObjectToInstantiate == null) { Debug.Log("”кажите у Player ссылку на объект в Inspector"); return; }
         if (creator == null)
         {
-            Debug.Log("”кажите у Player ссылку на спавнер в Inspector");
-            Instantiate(ObjectToInstantiate, pointerInput, transform.rotation);
+            Instantiate(ObjectToInstantiate, transform.position+(transform.forward*3f), transform.rotation);
         }
         else
         {
@@ -97,25 +92,7 @@ public class Player : MonoBehaviour, IDamageable
         }
 
     }
-    private Vector2 Move()
-    {
-        if (movementInput == Vector2.zero)
-            return FollowTargetVector();
-        else 
-            target = null;
-        return movementInput;
-    }
-    private Vector2 FollowTargetVector()
-    {
-        if (target == transform.localPosition)
-            target = null;
-        if (target == null)
-            return Vector2.zero;
-        Vector3 newPos = Vector3.MoveTowards(transform.position, (Vector2)target, 1f);
-        Vector3 offset = newPos - transform.position;
-        return offset;
-    }
-    private Vector2 GetPointerInput()
+    private Vector3 GetPointerInput()
     {
        return PointerInput.GetPointerInput();
     }
@@ -134,22 +111,22 @@ public class Player : MonoBehaviour, IDamageable
     {
         GetHit();
     }
-    private void FollowCursor_Action_Started(InputAction.CallbackContext context)
+    private void FollowCursor_Action_Started(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        target = pointerInput;
+        target.position = pointerInput;
         currentHoldTime += Time.deltaTime;
     }
 
-    private void FollowCursor_Action_Canceled(InputAction.CallbackContext context)
+    private void FollowCursor_Action_Canceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
         if (currentHoldTime > maxHoldTime)
             target = null;
         currentHoldTime = 0;
     }
 
-    private void FollowCursor_Action_Performed(InputAction.CallbackContext context)
+    private void FollowCursor_Action_Performed(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        target = pointerInput;
+        target.position = pointerInput;
     }
 
     

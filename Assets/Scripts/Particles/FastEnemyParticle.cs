@@ -8,7 +8,7 @@ public class FastEnemyParticle : Particle, IDamageable, IEnemy
 {
     public FastEnemyParticle()
     {
-        movementSpeed = 2;
+       
     }
     private new void Start()
     {
@@ -17,7 +17,7 @@ public class FastEnemyParticle : Particle, IDamageable, IEnemy
     }
     public new void Update()
     {
-        base.Update();
+        
     }
 
     public new void GetHit()

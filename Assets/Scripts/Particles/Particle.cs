@@ -8,18 +8,17 @@ public class Particle : MonoBehaviour, IDamageable
 {
     [SerializeField]
     protected int hp = 1;
-    [SerializeField] 
+    [HideInInspector]
     protected AudioSource AudioSource;
     [SerializeField]
     protected AudioClip GetHitSound;
     [SerializeField]
     protected AudioClip DeathSound;
-    [SerializeField]
-    public float movementSpeed;
     protected Vector3 lastDirection;
     [SerializeField]
     public IBounce BounceAction;
     ScorePointHolder ScorePointHolder;
+    public Mover Mover;
     public Particle()
     {
         BounceAction=new ExplodeBounce();
@@ -28,10 +27,15 @@ public class Particle : MonoBehaviour, IDamageable
     public void Start()
     {
     }
-    private void Awake()
+    public void Update()
     {
-        AudioSource = GameObject.Find("Audio Source").GetComponent<AudioSource>();
+        
+    }
+    public void Awake()
+    {
+        AudioSource = GameObject.Find("AudioSource").GetComponent<AudioSource>();
         ScorePointHolder= gameObject.GetComponent<ScorePointHolder>();
+        //Mover=GetComponent<Mover>();
     }
     public Particle Clone()
     {
@@ -44,11 +48,6 @@ public class Particle : MonoBehaviour, IDamageable
     private Vector3 GetStartingDirectionv2()   
     {
        return new Vector3(-1f, 1f);
-    }
-    public void Update()
-    { 
-        Move();
-
     }
     protected void OnCollisionEnter2D(Collision2D collision)
     {
@@ -63,14 +62,6 @@ public class Particle : MonoBehaviour, IDamageable
         lastDirection = direction;
         BounceAction.Execute(transform);
     }
-    protected void Move()
-    {
-        float dx = movementSpeed * lastDirection.x;
-        float dy = movementSpeed * lastDirection.y;
-        Vector2 newPos = transform.localPosition + new Vector3(movementSpeed * Time.deltaTime * dx, movementSpeed * Time.deltaTime * dy, 0);
-        transform.localPosition = newPos;
-        //Debug.Log($"Particle ({gameObject.GetInstanceID()}) is Moving");
-    }
 
     public void GetHit()
     {
@@ -84,7 +75,7 @@ public class Particle : MonoBehaviour, IDamageable
     public void GetHit(HitInfo hitInfo)
     {
         GetHit();
-        Debug.Assert(true,"From bullet, emitter: "+hitInfo.Emitter.ToString());
+        Debug.Assert(true,"Get Hitted From bullet, emitter: "+hitInfo.Emitter.ToString());
         ScorePointReciever scorePointReciever = hitInfo.Emitter.GetComponent<ScorePointReciever>();
         if(scorePointReciever != null ) { scorePointReciever.RecievePoints(ScorePointHolder.GetPoints()); }
     }

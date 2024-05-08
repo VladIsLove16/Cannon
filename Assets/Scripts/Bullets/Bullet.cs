@@ -1,10 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Unity.Mathematics;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class Bullet : MonoBehaviour
 {
@@ -13,8 +9,9 @@ public class Bullet : MonoBehaviour
     //int Damage;
     [SerializeField]
     public int LifeTime=5000;
-    public GameObject emitter { get; private set; }//owner,player,boss,host,parentm,wallah
+    public Player emitter = null;//owner,player,boss,host,parentm,wallah
     Mover mover;
+    Rigidbody rb;
     public Bullet ()
     {
         Direction = GetStartingDirection();
@@ -24,7 +21,7 @@ public class Bullet : MonoBehaviour
        this.Direction = direction;
 
     }
-    public Bullet(Vector3 direction,GameObject emmiter)
+    public Bullet(Vector3 direction,Player emmiter)
     {
        this.Direction = direction;
        this.emitter = emmiter;
@@ -34,16 +31,21 @@ public class Bullet : MonoBehaviour
     }
     private void Awake()
     {
-        DestroyThisAfter(LifeTime);
+        //DestroyThisAfter(LifeTime);
         mover = GetComponent<Mover>();
+        rb= GetComponent<Rigidbody>();  
     }
     void Update()
     {
-        mover.Movement=MoveDirection();
+       if(mover!=null) mover.MoveDirection=MoveDirection();
     }
-    public void SetEmitter(GameObject gameObject)
+    public void AddForce(Vector3 direction,float force)
     {
-        emitter = gameObject;
+        rb.AddForce(direction * force);
+    }
+    public void SetEmitter(Player player)
+    {
+        emitter = player;
     }
     private async void DestroyThisAfter(int lifeTime)
     {
@@ -56,7 +58,7 @@ public class Bullet : MonoBehaviour
         return Direction;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter(Collision collision)
     {
         IDamageable damageable = collision.gameObject.GetComponent<IDamageable>();
         if (damageable!=null) 

@@ -7,7 +7,6 @@ public class SlowEnemyParticle : Particle, IEnemy, IDamageable
 {
     public SlowEnemyParticle()
     {
-        movementSpeed = 1;
         hp = 2;
     }
     private new void Start()

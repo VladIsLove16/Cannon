@@ -56,14 +56,14 @@ public class ControlPanel : MonoBehaviour
     {
         foreach (Transform child in EnemyContainer)
         {
-            child.GetComponent<Particle>().movementSpeed +=SpeedChangeValue;
+            child.GetComponent<Particle>().Mover.Movespeed +=SpeedChangeValue;
         }
     }
     public void EnemySpeedDown()
     {
         foreach (Transform child in EnemyContainer)
         {
-            child.GetComponent<Particle>().movementSpeed -= SpeedChangeValue;
+            child.GetComponent<Particle>().Mover.Movespeed -= SpeedChangeValue;
         }
     }
     public void SwitchInvulnerable()

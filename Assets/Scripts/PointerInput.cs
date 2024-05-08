@@ -8,10 +8,10 @@ public class PointerInput : MonoBehaviour
 {
     [SerializeField]
     public InputActionReference pointerPosition;
-    static Vector2 mousePosition;
+    static Vector3 mousePosition;
     private void Update()
     {
-        mousePosition = pointerPosition.action.ReadValue<Vector2>();
+        mousePosition = pointerPosition.action.ReadValue<Vector3>();
     }
     //public static Vector2 GetPointerInput()
     //{
