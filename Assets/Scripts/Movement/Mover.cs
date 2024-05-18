@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -35,10 +36,11 @@ public class Mover : MonoBehaviour
     public MoveMethod moveMethod;
     [SerializeField]
     public Vector3 MoveDirection {  get; set; }
-    [SerializeField]
-    public float CurrentMovespeed { get; private set; }
+    private float CurrentMovespeed;
     [SerializeField]
     public float Movespeed;
+    [SerializeField]
+    public float Force;
     public float Turnspeed = 0.1f;
     private float TurnTime=0.1f;
     [SerializeField]
@@ -49,6 +51,8 @@ public class Mover : MonoBehaviour
     [SerializeField]
     InputActionReference Movement;
     private Vector3 movementInput { get; set; }
+    
+
     private MovementStrategy movementStrategy;
     private void Awake()
     {
@@ -116,11 +120,11 @@ public class Mover : MonoBehaviour
                         }
                     case MoveVectorStrategyMethod.Input:
                         {
-                            if(movementInput.normalized.magnitude>0.1f)
+                            if (movementInput.magnitude>0.1f)
                             {
-                            float targetAngle = Mathf.Atan2(movementInput.x, movementInput.z) * Mathf.Rad2Deg + Camera.main.transform.eulerAngles.y;
-                            Vector3 movementDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-                            return movementDirection;
+                                float targetAngle = Mathf.Atan2(movementInput.x, movementInput.z) * Mathf.Rad2Deg + Camera.main.transform.eulerAngles.y;
+                                Vector3 movementDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+                                return movementDirection;
                             }
                             else return Vector3.zero;
                             break;
@@ -148,25 +152,28 @@ public class Mover : MonoBehaviour
     }
     private Vector3 FollowTargetVector()
     {
-        if (Vector3.Distance(transform.position, Target.position) <= 1f)
+
+        if (Target == null)
+            return Vector3.zero;
+        //                                                 без учета y координаты
+        if (Vector3.Distance(transform.position, Target.position)-MathF.Abs(transform.position.y- Target.position.y) <= 1f)
         {
             PreviousWanderPoint = Target;   
             Target = null;
-        }
-        if (Target == null)
             return Vector3.zero;
+        }
         Vector3 newPos = Vector3.MoveTowards(transform.position, Target.transform.position, 1f);
         Vector3 offset = newPos - transform.position;
         return offset;
     }
     private void PhysicsMove()
-    { 
-        rb.AddForce(MoveDirection*Movespeed, ForceMode.VelocityChange);   
+    {
+        rb.AddForce(new Vector3(MoveDirection.x, 0, MoveDirection.z) * Movespeed * Force, ForceMode.Force); ;   
         CurrentMovespeed = rb.velocity.magnitude;
     }
     private void TransformMove()
     {
-        Vector2 newPos = transform.localPosition + new Vector3(Movespeed * Time.deltaTime * MoveDirection.x, Movespeed * Time.deltaTime * MoveDirection.y, 0);
+        Vector3 newPos = transform.localPosition + new Vector3(Movespeed * Time.deltaTime * MoveDirection.x, 0,  Movespeed * Time.deltaTime * MoveDirection.z);
         transform.localPosition = newPos;
     }
     private void SpeedControl()
@@ -181,10 +188,12 @@ public class Mover : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.blue;
+        if(Target != null)
         Gizmos.DrawSphere(Target.position, 1f);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawSphere(PreviousWanderPoint.position, 1f);
+        if (PreviousWanderPoint != null)
+            Gizmos.DrawSphere(PreviousWanderPoint.position, 1f);
 
         Gizmos.color = Color.green;
         foreach (Transform transform in WanderPoints)
@@ -194,4 +203,22 @@ public class Mover : MonoBehaviour
         }
 
     }
+    //private void FollowCursor_Action_Started(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    //{
+
+    //    target.position = pointerInput;
+    //    currentHoldTime += Time.deltaTime;
+    //}
+
+    //private void FollowCursor_Action_Canceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    //{
+    //    if (currentHoldTime > maxHoldTime)
+    //        target = null;
+    //    currentHoldTime = 0;
+    //}
+
+    //private void FollowCursor_Action_Performed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    //{
+    //    target.position = pointerInput;
+    //}
 }

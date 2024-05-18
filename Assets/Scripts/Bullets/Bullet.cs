@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -9,9 +10,10 @@ public class Bullet : MonoBehaviour
     //int Damage;
     [SerializeField]
     public int LifeTime=5000;
-    public Player emitter = null;//owner,player,boss,host,parentm,wallah
+    public Player Emitter{ get; private set; }//owner,player,boss,host,parentm,wallah
     Mover mover;
     Rigidbody rb;
+    Explosion explosion;
     public Bullet ()
     {
         Direction = GetStartingDirection();
@@ -24,18 +26,16 @@ public class Bullet : MonoBehaviour
     public Bullet(Vector3 direction,Player emmiter)
     {
        this.Direction = direction;
-       this.emitter = emmiter;
-    }
-    void Start()
-    {
+       this.Emitter = emmiter;
     }
     private void Awake()
     {
         //DestroyThisAfter(LifeTime);
         mover = GetComponent<Mover>();
-        rb= GetComponent<Rigidbody>();  
+        rb = GetComponent<Rigidbody>();
+        explosion = GetComponent<Explosion>();
     }
-    void Update()
+    void FixedUpdate()
     {
        if(mover!=null) mover.MoveDirection=MoveDirection();
     }
@@ -45,7 +45,9 @@ public class Bullet : MonoBehaviour
     }
     public void SetEmitter(Player player)
     {
-        emitter = player;
+        Emitter = player;
+        if(explosion!=null)
+            explosion.Emmiter = player;
     }
     private async void DestroyThisAfter(int lifeTime)
     {
@@ -63,15 +65,8 @@ public class Bullet : MonoBehaviour
         IDamageable damageable = collision.gameObject.GetComponent<IDamageable>();
         if (damageable!=null) 
             damageable.GetHit(new HitInfo() {
-                Emitter=this.emitter}
+                Emitter=this.Emitter}
             );
-
-        Debug.Log("Bullet collide with" + collision.ToString());
-        Debug.Log("from Bullet emmitter: " + emitter.ToString());
-        if (collision.gameObject.CompareTag("Wall"))
-        {
-            Destroy(gameObject);
-        }
     }
     private Vector3 GetStartingDirection()
     {

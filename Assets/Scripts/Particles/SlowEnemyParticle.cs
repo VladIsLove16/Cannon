@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class SlowEnemyParticle : Particle, IEnemy, IDamageable
+public class SlowEnemyParticle : Particle , IDamageable
 {
     public SlowEnemyParticle()
     {

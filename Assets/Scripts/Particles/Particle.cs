@@ -17,8 +17,12 @@ public class Particle : MonoBehaviour, IDamageable
     protected Vector3 lastDirection;
     [SerializeField]
     public IBounce BounceAction;
-    ScorePointHolder ScorePointHolder;
-    public Mover Mover;
+
+    protected new ParticleSystem particleSystem;
+    protected Rigidbody rb;
+    protected MeshRenderer mr;
+    protected new Collider collider;
+    protected bool Diyengl;
     public Particle()
     {
         BounceAction=new ExplodeBounce();
@@ -33,9 +37,11 @@ public class Particle : MonoBehaviour, IDamageable
     }
     public void Awake()
     {
-        AudioSource = GameObject.Find("AudioSource").GetComponent<AudioSource>();
-        ScorePointHolder= gameObject.GetComponent<ScorePointHolder>();
-        //Mover=GetComponent<Mover>();
+        AudioSource=GetComponent<AudioSource>();
+        particleSystem = GetComponent<ParticleSystem>();
+        rb = GetComponentInParent<Rigidbody>();
+        mr = GetComponentInParent<MeshRenderer>();
+        collider = GetComponent<Collider>();
     }
     public Particle Clone()
     {
@@ -49,13 +55,7 @@ public class Particle : MonoBehaviour, IDamageable
     {
        return new Vector3(-1f, 1f);
     }
-    protected void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Wall"))
-        {
-            Bounce(collision); 
-        }
-    }
+    
     protected void Bounce(Collision2D collision)
     {
         Vector3 direction = Vector3.Reflect(lastDirection.normalized, collision.contacts[0].normal);
@@ -66,18 +66,35 @@ public class Particle : MonoBehaviour, IDamageable
     public void GetHit()
     {
         hp--;
-        if(hp <= 0)
+        
+        if (hp <= 0)
         { 
-            Destroy(gameObject);
-            AudioSource.PlayOneShot(GetHitSound);
-        }    
+            Die();
+        }
+        else AudioSource.PlayOneShot(GetHitSound);
     }
+
+    private async void Die()
+    {
+        if (Diyengl) return;
+        Diyengl = true;
+        AudioSource.PlayOneShot(DeathSound);
+        if (particleSystem != null)
+            particleSystem.Play();
+        if (mr != null)
+            mr.enabled = false;
+        if (collider != null)
+            collider.enabled = false;
+        rb.isKinematic = true;
+        await Task.Delay(Mathf.RoundToInt(GetHitSound.length*1000));
+        Destroy(gameObject);
+    }
+
     public void GetHit(HitInfo hitInfo)
     {
         GetHit();
-        Debug.Assert(true,"Get Hitted From bullet, emitter: "+hitInfo.Emitter.ToString());
-        ScorePointReciever scorePointReciever = hitInfo.Emitter.GetComponent<ScorePointReciever>();
-        if(scorePointReciever != null ) { scorePointReciever.RecievePoints(ScorePointHolder.GetPoints()); }
+        if(hitInfo.Emitter!=null)
+            Debug.Assert(true,"Pritcle Getting Hitted From : "+hitInfo.Emitter.ToString());
     }
     protected async void DieAsync()
     {

@@ -11,13 +11,12 @@ using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
 public class Player : MonoBehaviour, IDamageable
 {
-    public static Player Instance = null;
     public UnityEvent Death;
     [SerializeField]
     public bool IsInvulnerable = false;
     private Vector2 pointerInput;
     [SerializeField]
-    InputActionReference attack,followCursor,spawn;
+    InputActionReference attack,spawn;
     [SerializeField]
     public Particle ObjectToInstantiate;
     [SerializeField]
@@ -25,20 +24,14 @@ public class Player : MonoBehaviour, IDamageable
     [SerializeField]
     Weapon Weapon;
     Mover mover;
+    AudioSource AudioSource;
     private void Start()
     {
-        if (Instance == null)
-        { // Ёкземпл€р менеджера был найден
-            Instance = this; // «адаем ссылку на экземпл€р объекта
-        }
-        else if (Instance == this)
-        { // Ёкземпл€р объекта уже существует на сцене
-            Destroy(gameObject); // ”дал€ем объект
-        }
     }
     private void Awake()
     {
         mover = GetComponent<Mover>();
+        AudioSource=GetComponent<AudioSource>();
     }
     Transform target
     {
@@ -59,18 +52,12 @@ public class Player : MonoBehaviour, IDamageable
     }
     private void OnEnable()
     {
-        followCursor.action.performed += FollowCursor_Action_Performed;
-        followCursor.action.canceled += FollowCursor_Action_Canceled;
-        followCursor.action.started += FollowCursor_Action_Started;
         attack.action.performed += Attack;
         spawn.action.performed += Spawn;
 
     }
     private void OnDisable()
     {
-        followCursor.action.performed -= FollowCursor_Action_Performed;
-        followCursor.action.canceled -= FollowCursor_Action_Canceled;
-        followCursor.action.started -= FollowCursor_Action_Started;
         attack.action.performed -= Attack;
         spawn.action.performed -= Spawn; 
     }
@@ -111,23 +98,4 @@ public class Player : MonoBehaviour, IDamageable
     {
         GetHit();
     }
-    private void FollowCursor_Action_Started(UnityEngine.InputSystem.InputAction.CallbackContext context)
-    {
-        target.position = pointerInput;
-        currentHoldTime += Time.deltaTime;
-    }
-
-    private void FollowCursor_Action_Canceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
-    {
-        if (currentHoldTime > maxHoldTime)
-            target = null;
-        currentHoldTime = 0;
-    }
-
-    private void FollowCursor_Action_Performed(UnityEngine.InputSystem.InputAction.CallbackContext context)
-    {
-        target.position = pointerInput;
-    }
-
-    
 }

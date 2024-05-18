@@ -9,13 +9,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3692447805926086461}
+  - component: {fileID: 6150117620018408732}
   - component: {fileID: 7892500672307254594}
   - component: {fileID: 3721018262998119906}
   - component: {fileID: 4431861843802215250}
   - component: {fileID: 4565357013438842808}
   - component: {fileID: 6788664019851009067}
   - component: {fileID: 2155682239558337153}
-  - component: {fileID: 6150117620018408732}
+  - component: {fileID: 4807125704128424820}
+  - component: {fileID: -1290042557673762738}
   m_Layer: 0
   m_Name: FastEnemyParticle
   m_TagString: Untagged
@@ -39,6 +41,28 @@ Transform:
   - {fileID: 5945999650348617101}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6150117620018408732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2276650943112200146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 281bb6dc58820df4aae95e6411566f49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveStrategyRealizationType: 1
+  moveStrategy: 2
+  moveMethod: 0
+  Movespeed: 5
+  Force: 300
+  Turnspeed: 0.1
+  Target: {fileID: 0}
+  WanderPoints: []
+  PreviousWanderPoint: {fileID: 0}
+  Movement: {fileID: 0}
 --- !u!114 &7892500672307254594
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54,7 +78,6 @@ MonoBehaviour:
   hp: 1
   GetHitSound: {fileID: 8300000, guid: 31ddd63f6aca7a84fb4efaa01cdb351c, type: 3}
   DeathSound: {fileID: 8300000, guid: fe5ad6753bfe38544b748d6af98ba9da, type: 3}
-  Mover: {fileID: 0}
 --- !u!114 &3721018262998119906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67,7 +90,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90a14d3773ce7b34fb663d24e3fd9668, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  points: 2
+  Points: 5
 --- !u!54 &4431861843802215250
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -166,7 +189,103 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6150117620018408732
+--- !u!82 &4807125704128424820
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2276650943112200146}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &-1290042557673762738
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -175,18 +294,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 2276650943112200146}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 281bb6dc58820df4aae95e6411566f49, type: 3}
+  m_Script: {fileID: 11500000, guid: fa18aa11be5bc5e4b991388a593a4c7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveStrategyRealizationType: 1
-  moveStrategy: 0
-  moveMethod: 0
-  Movespeed: 5
-  Turnspeed: 0.1
-  Target: {fileID: 0}
-  WanderPoints: []
-  PreviousWanderPoint: {fileID: 0}
-  Movement: {fileID: 0}
+  ExplodeSound: {fileID: 0}
+  Force: 0
+  Radius: 0
+  ExplodeChainRadius: 0
+  ExplodeNearExplosions: 1
+  Activate: 0
+  DestroyOnExplode: 0
+  exploded: 0
 --- !u!1001 &1404920543671495257
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -238,6 +356,10 @@ PrefabInstance:
     - target: {fileID: 5015988641661176936, guid: 4c4cef488e2befc499a0a2d0bf1883e0, type: 3}
       propertyPath: m_Name
       value: ExplosionParticleEffect
+      objectReference: {fileID: 0}
+    - target: {fileID: 5015988641661176936, guid: 4c4cef488e2befc499a0a2d0bf1883e0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
