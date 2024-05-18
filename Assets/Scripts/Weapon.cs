@@ -31,12 +31,11 @@ public class Weapon : MonoBehaviour
     [Header("Barrel")]
     [SerializeField]
     public float rotationSpeedY = 5f;
-    public float maxYRotation=15f;
-    public float minYRotation=-45f;
+    public float maxYRotation=20f;
+    public float minYRotation=-20f;
     private float RotationInput;
+    public Transform Barrel;
     [Header("Debug")]
-    [SerializeField]
-    Player player;
     [SerializeField]
     private InputActionReference RotateAction;
     [SerializeField]
@@ -45,10 +44,9 @@ public class Weapon : MonoBehaviour
 
     private void Awake()
     {
-       rb=GetComponentInParent<Rigidbody>();
+        rb=GetComponentInParent<Rigidbody>();
         _audioSourceRotation = gameObject.AddComponent<AudioSource>();
         _audioSourceShoot = gameObject.AddComponent<AudioSource>();
-        player=GetComponentInParent<Player>();
     }
     private void ChoosedSlot4(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
@@ -98,7 +96,7 @@ public class Weapon : MonoBehaviour
         RotationInput = RotateAction.action.ReadValue<float>();
         if (Mathf.Abs(RotationInput) > 0.1f)
         {
-            transform.eulerAngles += new Vector3(RotationInput * rotationSpeedY, 0, 0);
+            Barrel.localEulerAngles += new Vector3(0, RotationInput * rotationSpeedY, 0);
             LimitRotation();
             PlaySound();
         }
@@ -108,7 +106,7 @@ public class Weapon : MonoBehaviour
     private void PlaySound()
     {
         _audioSourceRotation.pitch = RotationInput * pitch;
-        float angle = Mathf.Round(transform.localEulerAngles.x);
+        float angle = Mathf.Round(Barrel.localEulerAngles.y);
         if (angle > 180) angle = angle - 360;
         if (_audioSourceRotation.clip == null)
             _audioSourceRotation.clip = RotationSound;
@@ -124,6 +122,7 @@ public class Weapon : MonoBehaviour
             }
         }
         else{
+            Debug.Log("Sound play");
             if (angle == maxYRotation || angle == minYRotation)
                 _audioSourceRotation.Pause();
             if(Mathf.Abs( RotationInput)<0.1)
@@ -132,11 +131,11 @@ public class Weapon : MonoBehaviour
     }
     private void LimitRotation()
     {
-        Vector3 Euler = transform.rotation.eulerAngles;
-        if (Euler.x > 180)
-            Euler.x -= 360;
-        Euler.x = Math.Clamp(Euler.x, minYRotation, maxYRotation);
-        transform.rotation=Quaternion.Euler(Euler);
+        Vector3 Euler = Barrel.localRotation.eulerAngles;
+        if (Euler.y > 180)
+            Euler.y -= 360;
+        Euler.y = Math.Clamp(Euler.y, minYRotation, maxYRotation);
+        Barrel.localRotation =Quaternion.Euler(Euler);
     }
 
     //private void PlayerRotate()
@@ -153,19 +152,20 @@ public class Weapon : MonoBehaviour
     //    transform.rotation = Quaternion.Euler(0, 0, angle);
     //}
 
-    public void Shoot()
+    public void Shoot(Player Emmiter)
     {
         //_particleSystem.Play();
         _audioSourceShoot.PlayOneShot(ShootSound);
         Bullet bullet = Instantiate(BulletPrefab, ShootPoint.position, transform.localRotation, BulletContainer).GetComponent<Bullet>();
-        bullet.SetEmitter(player);
-        bullet.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward*ShootForce);
+        bullet.SetEmitter(Emmiter);
+        bullet.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward *ShootForce);
+        Debug.Log(transform.forward);
         AddRecoilForce();
 
     }
 
     private void AddRecoilForce()
     {
-        rb.AddForce(-transform.forward * RecoilForce,ForceMode.Acceleration);
+        rb.AddForce(-transform.forward * RecoilForce,ForceMode.Force);
     }
 }

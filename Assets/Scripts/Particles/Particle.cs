@@ -74,7 +74,7 @@ public class Particle : MonoBehaviour, IDamageable
         else AudioSource.PlayOneShot(GetHitSound);
     }
 
-    private async void Die()
+    private void Die()
     {
         if (Diyengl) return;
         Diyengl = true;
@@ -86,7 +86,7 @@ public class Particle : MonoBehaviour, IDamageable
         if (collider != null)
             collider.enabled = false;
         rb.isKinematic = true;
-        await Task.Delay(Mathf.RoundToInt(GetHitSound.length*1000));
+        Task.Delay(Mathf.RoundToInt(GetHitSound.length*1000));
         Destroy(gameObject);
     }
 

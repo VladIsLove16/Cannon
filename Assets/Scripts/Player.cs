@@ -63,7 +63,7 @@ public class Player : MonoBehaviour, IDamageable
     }
     private void Attack(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        Weapon.Shoot();
+        Weapon.Shoot(this);
     }
     private void Spawn(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
