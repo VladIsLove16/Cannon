@@ -1,9 +1,11 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
@@ -15,19 +17,26 @@ public class Weapon : MonoBehaviour
     [SerializeField]
     AudioClip RotationSound;
     [SerializeField]
+    public AudioClip WeaponSlotSwitch;
+    [SerializeField]
     private float pitch;
     private AudioSource _audioSourceRotation;
     private AudioSource _audioSourceShoot;
+    private AudioSource _audioSourceWeaponSwitch;
     [Header("Bullet")]
     [SerializeField]
     public GameObject BulletPrefab;
     public List<GameObject> AvailableBullets;
     public Transform BulletContainer;
+    public UnityEvent<int> WeaponSwitched;
     [Header("Shoot")]
     public Transform ShootPoint;
     public Transform ExplosionPoint;
     public float ShootForce=10f;
     public float RecoilForce = 10f;
+    public float nextTimeToShoot;
+    public float ReloadTime;
+    public UnityEvent ReloadingAssert;
     [Header("Barrel")]
     [SerializeField]
     public float rotationSpeedY = 5f;
@@ -40,32 +49,43 @@ public class Weapon : MonoBehaviour
     private InputActionReference RotateAction;
     [SerializeField]
     private InputActionReference WeaponSlot1, WeaponSlot2, WeaponSlot3, WeaponSlot4;
-    private Rigidbody rb; 
-
+    private Rigidbody rb;
+    private bool CanShoot;
     private void Awake()
     {
         rb=GetComponentInParent<Rigidbody>();
         _audioSourceRotation = gameObject.AddComponent<AudioSource>();
         _audioSourceShoot = gameObject.AddComponent<AudioSource>();
+        _audioSourceWeaponSwitch = gameObject.AddComponent<AudioSource>();
     }
     private void ChoosedSlot4(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        BulletPrefab = AvailableBullets[3] ?? BulletPrefab;
+        SetBulletSlot(3);
     }
     private void ChoosedSlot3(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        BulletPrefab = AvailableBullets[2] ?? BulletPrefab;
+        SetBulletSlot(2);
     }
 
     private void ChoosedSlot2(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        BulletPrefab = AvailableBullets[1] ?? BulletPrefab;
+        SetBulletSlot(1);
     }
     private void ChoosedSlot1(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-       BulletPrefab = AvailableBullets[0] ?? BulletPrefab;
+        SetBulletSlot(0);
     }
-   
+    public void SetBulletSlot(int slot)
+    {
+        if (!GameController.instance.isPaused)
+        {
+            if (slot >= AvailableBullets.Count) { Debug.LogError(slot + " is out of " + AvailableBullets.Count); return; }
+            BulletPrefab = AvailableBullets[slot] ?? BulletPrefab;
+            _audioSourceWeaponSwitch.clip = WeaponSlotSwitch;
+            _audioSourceWeaponSwitch.Play();
+            WeaponSwitched?.Invoke(slot);
+        }
+    }
     private void OnEnable()
     {
         WeaponSlot1.action.performed += ChoosedSlot1;
@@ -93,14 +113,16 @@ public class Weapon : MonoBehaviour
 
     private void Rotate()
     {
-        RotationInput = RotateAction.action.ReadValue<float>();
-        if (Mathf.Abs(RotationInput) > 0.1f)
+        if (!GameController.instance.isPaused)
         {
-            Barrel.localEulerAngles += new Vector3(0, RotationInput * rotationSpeedY, 0);
-            LimitRotation();
-            PlaySound();
+            RotationInput = RotateAction.action.ReadValue<float>();
+            if (Mathf.Abs(RotationInput) > 0.1f)
+            {
+                Barrel.localEulerAngles += new Vector3(0, RotationInput * rotationSpeedY, 0);
+                LimitRotation();
+                PlaySound();
+            }
         }
-
     }
 
     private void PlaySound()
@@ -154,13 +176,27 @@ public class Weapon : MonoBehaviour
 
     public void Shoot(Player Emmiter)
     {
-        //_particleSystem.Play();
-        _audioSourceShoot.PlayOneShot(ShootSound);
-        Bullet bullet = Instantiate(BulletPrefab, ShootPoint.position, transform.localRotation, BulletContainer).GetComponent<Bullet>();
-        bullet.SetEmitter(Emmiter);
-        bullet.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward *ShootForce);
-        Debug.Log(transform.forward);
-        AddRecoilForce();
+        if( nextTimeToShoot<Time.time) {
+            //_particleSystem.Play();
+            _audioSourceShoot.PlayOneShot(ShootSound);
+            Bullet bullet = Instantiate(BulletPrefab, ShootPoint.position, transform.localRotation, BulletContainer).GetComponent<Bullet>();
+            bullet.SetEmitter(Emmiter);
+            Vector3 Euler = Barrel.localRotation.eulerAngles;
+            if (Euler.y > 180)
+                Euler.y -= 360;
+            bullet.gameObject.GetComponent<Rigidbody>().AddForce((ShootPoint.position-ExplosionPoint.position) * ShootForce); ;
+            Debug.Log("Barrel Angle^ " + Vector3.MoveTowards(ExplosionPoint.localPosition, ShootPoint.localPosition, 1f));
+            
+            Debug.Log(transform.forward);
+            AddRecoilForce();
+            nextTimeToShoot=Time.time+ReloadTime;
+            //transform.forward+new Vector3(0,Barrel.eulerAngles.y,0)
+        }
+        else
+        {
+            ReloadingAssert?.Invoke();
+            Debug.Log("Reloading!!");
+        }
 
     }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
-public class Explosion : MonoBehaviour
+public class Explosion : Hitter, IDamageable
 {
     
     public AudioClip ExplodeSound;
@@ -26,6 +26,10 @@ public class Explosion : MonoBehaviour
     protected new Collider collider;
     protected AudioSource audioSource;
     protected ScorePointHolder scorePointHolder;
+    [SerializeField]
+    private int damage;
+    public int Damage { get => damage; set => damage=value; }
+
     protected virtual void Awake()
     {
         audioSource = gameObject.AddComponent<AudioSource>();
@@ -41,15 +45,22 @@ public class Explosion : MonoBehaviour
         if (Activate)
         {
             exploded=false;
-            Explode(Emmiter,this);
+            Explode(new HitInfo(this, Emmiter));
             Activate = false; 
         }
     }
-    public virtual void Explode(Player Emmitter,Explosion Exploder)
+    public virtual void Explode(HitInfo hitInfo)
     {
         if (exploded) return;
         exploded=true;
         Collider[] colliders = Physics.OverlapSphere(transform.position, Radius);
+        foreach (Collider collider in colliders)
+        {
+            IDamageable damageable = collider.gameObject.GetComponent<IDamageable>();
+            if (damageable != null)
+                damageable.GetHit(new HitInfo(this, hitInfo.Emitter));
+        }
+        colliders = Physics.OverlapSphere(transform.position, Radius);
         foreach (Collider collider in colliders)
         {
             Rigidbody rb = collider.GetComponent<Rigidbody>();
@@ -57,9 +68,9 @@ public class Explosion : MonoBehaviour
             {
                 rb.AddExplosionForce(Force, transform.position, Radius,2f);
             }
-            ExplodeNearExplosion(collider);
+            //ExplodeNearExplosion(collider,hitInfo);
         }
-        RecievePoints(Emmitter);
+        RecievePoints(hitInfo.Emitter);
         audioSource.clip = ExplodeSound;
         audioSource.Play();
         if(particleSystem!=null)
@@ -70,39 +81,43 @@ public class Explosion : MonoBehaviour
             collider.enabled = false;
         rb.isKinematic = true;
         if (DestroyOnExplode)
-            Destroy(Convert.ToInt32(audioSource.clip.length*1000));
+           StartCoroutine( Destroy(Convert.ToInt32(audioSource.clip.length*1000)));
     }
 
-    private void RecievePoints(Player player)
+    private void RecievePoints(Player player)//в gameController перенести 1000000%%!!!!!
     {
-        ScorePointReciever scorePointReciever = player.GetComponent<ScorePointReciever>();
-        if (scorePointReciever != null)
-            if (scorePointHolder != null)
-                scorePointReciever.RecievePoints(scorePointHolder.Points);
-    }
-
-    private void ExplodeNearExplosion(Collider collider)
-    {
-        if (ExplodeNearExplosions)
+        if (player != null)
         {
-            Explosion explosion = collider.GetComponent<Explosion>();
-            if (explosion == null)
-                explosion = collider.GetComponentInChildren<Explosion>();
-            if (explosion != null)
-            {
-                explosion.Explode(Emmiter, this);
-            }
+            ScorePointReciever scorePointReciever = player.GetComponent<ScorePointReciever>();
+            if (scorePointReciever != null)
+                if (scorePointHolder != null)
+                    scorePointReciever.RecievePoints(scorePointHolder.Points);
         }
     }
 
-    private async void Destroy(int Delay)
+    //private void ExplodeNearExplosion(HitInfo hitInfo)
+    //{
+    //    if (ExplodeNearExplosions)
+    //    {
+    //        Explosion explosion = collider.GetComponent<Explosion>();
+    //        if (explosion == null)
+    //            explosion = collider.GetComponentInChildren<Explosion>();
+    //        if (explosion != null)
+    //        {
+    //            explosion.Explode(hitInfo, this);
+    //        }
+    //    }
+    //}
+
+    private IEnumerator Destroy(int Delay)
     {
-        await Task.Delay(Delay);
+        yield return new WaitForSeconds(Delay);
         Destroy();
     }
     private void Destroy()
     {
-        Destroy(gameObject);
+        if(gameObject!=null)
+            Destroy(gameObject);
     }
     private void OnDrawGizmosSelected()
     {
@@ -111,5 +126,15 @@ public class Explosion : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, ExplodeChainRadius);
 
+    }
+
+    public void GetHit()
+    {
+        Explode(new HitInfo(this, Emmiter));
+    }
+
+    public void GetHit(HitInfo hitInfo)
+    {
+        Explode(hitInfo);
     }
 }

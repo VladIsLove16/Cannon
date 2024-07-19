@@ -9,7 +9,7 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
-public class Player : MonoBehaviour, IDamageable
+public class Player : MonoBehaviour, IDamageable, IEmmiter
 {
     public UnityEvent Death;
     [SerializeField]
@@ -63,12 +63,13 @@ public class Player : MonoBehaviour, IDamageable
     }
     private void Attack(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        Weapon.Shoot(this);
+        if(!GameController.instance.isPaused)
+        Emmit();
     }
     private void Spawn(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        
-        if (ObjectToInstantiate == null) { Debug.Log("”кажите у Player ссылку на объект в Inspector"); return; }
+        if (!GameController.instance.isPaused) { 
+        if (ObjectToInstantiate == null) { Debug.LogError("”кажите у Player ссылку на объект в Inspector"); return; }
         if (creator == null)
         {
             Instantiate(ObjectToInstantiate, transform.position+(transform.forward*3f), transform.rotation);
@@ -76,6 +77,7 @@ public class Player : MonoBehaviour, IDamageable
         else
         {
             creator.Spawn(ObjectToInstantiate, pointerInput);
+        }
         }
 
     }
@@ -97,5 +99,10 @@ public class Player : MonoBehaviour, IDamageable
     public void GetHit(HitInfo hitInfo)
     {
         GetHit();
+    }
+
+    public void Emmit()
+    {
+        Weapon.Shoot(this);
     }
 }

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class Bullet : MonoBehaviour
+public class Bullet : Hitter
 {
     public Vector3 Direction;
     //[SerializeField]
@@ -11,6 +11,10 @@ public class Bullet : MonoBehaviour
     [SerializeField]
     public int LifeTime=5000;
     public Player Emitter{ get; private set; }//owner,player,boss,host,parentm,wallah
+    [SerializeField]
+    private int damage;
+    public int Damage { get => damage; set => damage=value; }
+
     Mover mover;
     Rigidbody rb;
     Explosion explosion;
@@ -52,7 +56,8 @@ public class Bullet : MonoBehaviour
     private async void DestroyThisAfter(int lifeTime)
     {
         await Task.Delay(lifeTime);
-        Destroy(gameObject);
+        if(gameObject!=null)
+         Destroy(gameObject);
     }
     private Vector2 MoveDirection()
     {
@@ -63,10 +68,8 @@ public class Bullet : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         IDamageable damageable = collision.gameObject.GetComponent<IDamageable>();
-        if (damageable!=null) 
-            damageable.GetHit(new HitInfo() {
-                Emitter=this.Emitter}
-            );
+        if (damageable != null)
+            damageable.GetHit(new HitInfo(this, Emitter));
     }
     private Vector3 GetStartingDirection()
     {

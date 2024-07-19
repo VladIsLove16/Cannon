@@ -8,7 +8,7 @@ public class InputAction : MovementStrategy
     [HideInInspector]
     public Vector3 Direction = Vector3.zero;
     [SerializeField]
-    InputActionReference Movement;
+    //InputActionReference Movement;
     public Vector3 GetDir()
     {
         return Direction;
@@ -16,6 +16,6 @@ public class InputAction : MovementStrategy
     //private Vector3 movementInput { get; set; }
     void Update()
     {
-        Direction = Movement.action.ReadValue<Vector3>();
+        //Direction = Movement.action.ReadValue<Vector3>();
     }
 }

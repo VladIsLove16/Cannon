@@ -19,6 +19,6 @@ public class ContactExplosion : Explosion
     protected void OnCollisionEnter(Collision collision)
     {
         if(Delay>0)return;
-        Explode(Emmiter,this);
+            Explode(new HitInfo(this, Emmiter));
     }
 }

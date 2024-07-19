@@ -34,7 +34,7 @@ public class TimeBombExplosion : Explosion
                     audioSource.Play();
                 }
                 mr.material= ExplodingMaterial;
-                if (CurrentTimeToExplode <= 0) base.Explode(Emmiter, this);
+                if (CurrentTimeToExplode <= 0) base.Explode(new HitInfo(this, Emmiter));
             }
             else
             {
@@ -45,11 +45,11 @@ public class TimeBombExplosion : Explosion
             
         }
     }
-    public override void Explode(Player Emmitter, Explosion exploder)
+    public override void Explode(HitInfo hitInfo)
     {
         if (Exploding) return;
         Debug.Log("TimeBombExplosion");
-        float distanceToexploder = (transform.position - exploder.gameObject.transform.position).magnitude;
+        float distanceToexploder = (transform.position - hitInfo.Hitter.transform.position).magnitude;
         StartExploding(ExplodeDelay * (distanceToexploder / ExplodeChainRadius)+2f); 
     }
     private void StartExploding(float delay)

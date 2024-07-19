@@ -54,6 +54,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Direction: {x: 0.07371498, y: 0.99727935, z: 0}
   LifeTime: 5000
+  damage: 0
 --- !u!114 &-5032563090207500431
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -75,6 +76,7 @@ MonoBehaviour:
   DestroyOnExplode: 1
   exploded: 0
   Emmiter: {fileID: 0}
+  damage: 0
   ExplodingSound: {fileID: 8300000, guid: 478ab4f9ee7a2cc44a333428f94a89e3, type: 3}
   Exploding: 0
   ExplodeDelay: 2
@@ -107,7 +109,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!135 &-2532988707751173261
 SphereCollider:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 using static Cinemachine.CinemachineTargetGroup;
 using static Mover;
 using static UnityEngine.GraphicsBuffer;
-
+[RequireComponent(typeof(Rigidbody))]
 public class Mover : MonoBehaviour
 {
     public enum MoveVectorStrategyRealizationType
@@ -45,7 +45,11 @@ public class Mover : MonoBehaviour
     private float TurnTime=0.1f;
     [SerializeField]
     public Transform Target;
+    [SerializeField]
     public Transform[] WanderPoints;
+    [SerializeField]
+    public Transform PointsContainer;
+    public bool b_SetRandomWanderPoints;
     public Transform PreviousWanderPoint;
     Rigidbody rb;
     [SerializeField]
@@ -59,7 +63,30 @@ public class Mover : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         movementStrategy=GetComponent<MovementStrategy>();
+        if(b_SetRandomWanderPoints)
+        {
+            SetRandomWanderPoints();
+        }
     }
+
+    private void SetRandomWanderPoints()
+    {
+        List<Transform> AvailableWanderPoints = new List<Transform>();
+        foreach (Transform child in PointsContainer.transform)
+        {
+            AvailableWanderPoints.Add(child);
+        }
+        int WanderPointsCount = UnityEngine.Random.Range(2, AvailableWanderPoints.Count);
+        WanderPoints = new Transform[WanderPointsCount];
+        for (int i = 0; i < WanderPointsCount; i++)
+        {
+            int randomNum = UnityEngine.Random.Range(0, AvailableWanderPoints.Count);
+            Transform point = AvailableWanderPoints[randomNum];
+            AvailableWanderPoints.Remove(point);
+            WanderPoints[i] = point;
+        }
+    }
+
     private void FixedUpdate()
     {
         Move();
@@ -68,22 +95,25 @@ public class Mover : MonoBehaviour
 
     private void Move()
     {
-        if(Movement!=null) movementInput = Movement.action.ReadValue<Vector3>();
-        MoveDirection = MoveVector().normalized;
-        SpeedControl();
-        switch (moveMethod)
+        if (!GameController.instance.isPaused)
         {
-            case MoveMethod.Physic:
-                {
-                    PhysicsMove();
-                    break;
-                }
-            case MoveMethod.Transform:
-                {
-                    TransformMove();
-                    break;
-                }
-            default: break;
+            if (Movement != null) movementInput = Movement.action.ReadValue<Vector3>();
+            MoveDirection = MoveVector().normalized;
+            SpeedControl();
+            switch (moveMethod)
+            {
+                case MoveMethod.Physic:
+                    {
+                        PhysicsMove();
+                        break;
+                    }
+                case MoveMethod.Transform:
+                    {
+                        TransformMove();
+                        break;
+                    }
+                default: break;
+            }
         }
     }
 
